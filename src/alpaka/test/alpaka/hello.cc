@@ -14,6 +14,12 @@ int main() {
 #if defined ALPAKA_ACC_GPU_HIP_ENABLED
             << "HIP/ROCm "
 #endif
+#if defined ALPAKA_SYCL_ONEAPI_CPU
+            << "SYCL CPU "
+#endif
+#if defined ALPAKA_SYCL_ONEAPI_GPU
+            << "SYCL GPU "
+#endif
             << "backend" << std::endl;
   return 0;
 }

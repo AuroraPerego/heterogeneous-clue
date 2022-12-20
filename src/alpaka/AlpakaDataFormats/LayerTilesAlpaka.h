@@ -38,7 +38,7 @@ public:
     int xBin = (x - LayerTilesConstants::minX) * LayerTilesConstants::rX;
     xBin = (xBin < LayerTilesConstants::nColumns ? xBin : LayerTilesConstants::nColumns - 1);
     bool xBinPositive = xBin > 0;
-    xBin = xBinPositive*xBin;
+    xBin = xBinPositive * xBin;
     return xBin;
   }
 
@@ -46,7 +46,7 @@ public:
     int yBin = (y - LayerTilesConstants::minY) * LayerTilesConstants::rY;
     yBin = (yBin < LayerTilesConstants::nRows ? yBin : LayerTilesConstants::nRows - 1);
     bool yBinPositive = yBin > 0;
-    yBin = yBinPositive*yBin;
+    yBin = yBinPositive * yBin;
     return yBin;
   }
   ALPAKA_FN_HOST_ACC inline constexpr int getGlobalBin(float x, float y) const {
@@ -66,15 +66,9 @@ public:
       t.reset();
   }
 
-  ALPAKA_FN_HOST_ACC inline constexpr void clear(int i) {
-    layerTiles_[i].reset();
-  }
+  ALPAKA_FN_HOST_ACC inline constexpr void clear(int i) { layerTiles_[i].reset(); }
 
-  ALPAKA_FN_HOST_ACC inline constexpr auto size() {
-    return LayerTilesConstants::nColumns * LayerTilesConstants::nRows;
-  }
-
-
+  ALPAKA_FN_HOST_ACC inline constexpr auto size() { return LayerTilesConstants::nColumns * LayerTilesConstants::nRows; }
 
   ALPAKA_FN_HOST_ACC inline constexpr alpakaVect& operator[](int globalBinId) { return layerTiles_[globalBinId]; }
 

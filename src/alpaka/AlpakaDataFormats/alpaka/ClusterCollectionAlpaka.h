@@ -7,6 +7,25 @@
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
+  class ClusterCollectionAlpakaView { // dpcpp bug, cannot find nested classes in ALPAKA_ACCELERATOR_NAMESPACE
+  public:
+    float *x;
+    float *y;
+    float *z;
+    float *eta;
+    float *phi;
+    float *r_over_absz;
+    float *radius;
+    int *layer;
+    float *energy;
+    int *isSilicon;
+    float *rho;
+    std::pair<float, int> *delta;
+    int *nearestHigher;
+    int *isSeed;
+    int *tracksterIndex;
+  };
+
   class ClusterCollectionAlpaka {
   public:
     ClusterCollectionAlpaka() = delete;
@@ -70,25 +89,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     cms::alpakatools::device_buffer<Device, int[]> nearestHigher;
     cms::alpakatools::device_buffer<Device, int[]> isSeed;
     cms::alpakatools::device_buffer<Device, int[]> tracksterIndex;
-
-    class ClusterCollectionAlpakaView {
-    public:
-      float *x;
-      float *y;
-      float *z;
-      float *eta;
-      float *phi;
-      float *r_over_absz;
-      float *radius;
-      int *layer;
-      float *energy;
-      int *isSilicon;
-      float *rho;
-      std::pair<float, int> *delta;
-      int *nearestHigher;
-      int *isSeed;
-      int *tracksterIndex;
-    };
 
     ClusterCollectionAlpakaView *view() { return view_d.data(); }
 

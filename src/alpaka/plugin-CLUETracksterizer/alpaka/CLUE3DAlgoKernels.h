@@ -12,7 +12,13 @@
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
-  using pointsView = ClusterCollectionAlpaka::ClusterCollectionAlpakaView;
+#ifdef ALPAKA_ACC_SYCL_ENABLED
+  using sycl::abs;
+#else
+  using std::abs;
+#endif
+
+  using pointsView = ClusterCollectionAlpakaView;
 
   struct KernelResetHist {
     template <typename TAcc>
@@ -42,7 +48,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
       // push index of points into tiles
       cms::alpakatools::for_each_element_in_grid(acc, numberOfPoints, [&](uint32_t clusterIdx) {
         d_hist[d_points->layer[clusterIdx]].fill(
-            acc, std::abs(d_points->eta[clusterIdx]), d_points->phi[clusterIdx], clusterIdx);
+            acc, abs(d_points->eta[clusterIdx]), d_points->phi[clusterIdx], clusterIdx);
       });
     }
   };
@@ -189,7 +195,7 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
                 //              auto const &clustersOnOtherLayer = points[currentLayer];
                 auto dist = maxDelta;
                 auto dist_transverse = maxDelta;
-                int dist_layers = std::abs(currentLayer - layerId);
+                int dist_layers = abs(currentLayer - layerId);
                 dist_transverse = distanceSqr(d_points->r_over_absz[clusterIdx] * d_points->z[clusterIdx],
                                               d_points->r_over_absz[otherClusterIdx] * d_points->z[clusterIdx],
                                               d_points->phi[clusterIdx],

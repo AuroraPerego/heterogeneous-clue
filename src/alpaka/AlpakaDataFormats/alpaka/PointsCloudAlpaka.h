@@ -9,6 +9,19 @@
 
 namespace ALPAKA_ACCELERATOR_NAMESPACE {
 
+  class PointsCloudAlpakaView { // dpcpp bug, cannot find nested classes in ALPAKA_ACCELERATOR_NAMESPACE
+  public:
+    float *x;
+    float *y;
+    int *layer;
+    float *weight;
+    float *rho;
+    float *delta;
+    int *nearestHigher;
+    int *clusterIndex;
+    int *isSeed;
+  };
+
   class PointsCloudAlpaka {
   public:
     PointsCloudAlpaka() = delete;
@@ -54,19 +67,6 @@ namespace ALPAKA_ACCELERATOR_NAMESPACE {
     cms::alpakatools::device_buffer<Device, int[]> nearestHigher;
     cms::alpakatools::device_buffer<Device, int[]> clusterIndex;
     cms::alpakatools::device_buffer<Device, int[]> isSeed;
-
-    class PointsCloudAlpakaView {
-    public:
-      float *x;
-      float *y;
-      int *layer;
-      float *weight;
-      float *rho;
-      float *delta;
-      int *nearestHigher;
-      int *clusterIndex;
-      int *isSeed;
-    };
 
     PointsCloudAlpakaView *view() { return view_d.data(); }
 
