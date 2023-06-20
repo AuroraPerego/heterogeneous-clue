@@ -92,13 +92,13 @@ namespace alpaka_rocm_async {
 namespace alpaka_cpu_sycl {
   using namespace alpaka_common;
 
-  using Platform = alpaka::PltfCpuSyclIntel;
-  using Device = alpaka::DevCpuSyclIntel;
-  using Queue = alpaka::QueueCpuSyclIntelNonBlocking;
-  using Event = alpaka::EventCpuSyclIntel;
+  using Platform = alpaka::PltfCpuSycl;
+  using Device = alpaka::DevCpuSycl;
+  using Queue = alpaka::QueueCpuSyclNonBlocking;
+  using Event = alpaka::EventCpuSycl;
 
   template <typename TDim>
-  using Acc = alpaka::AccCpuSyclIntel<TDim, Idx>;
+  using Acc = alpaka::AccCpuSycl<TDim, Idx>;
   using Acc1D = Acc<Dim1D>;
   using Acc2D = Acc<Dim2D>;
   using Acc3D = Acc<Dim3D>;

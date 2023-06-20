@@ -65,8 +65,8 @@ namespace alpaka {
     using Task = std::packaged_task<void()>;
     //! The SYCL CPU async queue enqueue trait specialization for "safe tasks"
     template <>
-    struct Enqueue<QueueCpuSyclIntelNonBlocking, Task> {
-      ALPAKA_FN_HOST static auto enqueue(QueueCpuSyclIntelNonBlocking& queue, Task&& task) -> void {
+    struct Enqueue<QueueCpuSyclNonBlocking, Task> {
+      ALPAKA_FN_HOST static auto enqueue(QueueCpuSyclNonBlocking& queue, Task&& task) -> void {
         alpaka::core::CallbackThread m_callbackThread;
         queue.getNativeHandle().wait();
         m_callbackThread.submit(std::forward<Task>(task));

@@ -48,7 +48,7 @@ namespace cms::alpakatools {
 
 #if defined ALPAKA_SYCL_ONEAPI_CPU
   template <>
-  constexpr inline AllocatorPolicy allocator_policy<alpaka::DevCpuSyclIntel> =
+  constexpr inline AllocatorPolicy allocator_policy<alpaka::DevCpuSycl> =
 #if !defined ALPAKA_DISABLE_CACHING_ALLOCATOR
       AllocatorPolicy::Caching;
 #else

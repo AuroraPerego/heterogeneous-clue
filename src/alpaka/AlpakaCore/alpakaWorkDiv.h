@@ -50,7 +50,7 @@ namespace cms::alpakatools {
     } else
 #endif  // ALPAKA_ACC_GPU_HIP_ENABLED
 #if ALPAKA_SYCL_ONEAPI_CPU
-        if constexpr (std::is_same_v<TAcc, alpaka::AccCpuSyclIntel<Dim1D, Idx>>) {
+        if constexpr (std::is_same_v<TAcc, alpaka::AccCpuSycl<Dim1D, Idx>>) {
       // On GPU backends, each thread is looking at a single element:
       //   - threadsPerBlockOrElementsPerThread is the number of threads per block;
       //   - elementsPerThread is always 1.
@@ -102,7 +102,7 @@ namespace cms::alpakatools {
     } else
 #endif  // ALPAKA_ACC_GPU_HIP_ENABLED
 #ifdef ALPAKA_SYCL_ONEAPI_CPU
-        if constexpr (std::is_same_v<TAcc, alpaka::AccCpuSyclIntel<Dim, Idx>>) {
+        if constexpr (std::is_same_v<TAcc, alpaka::AccCpuSycl<Dim, Idx>>) {
       // On GPU backends, each thread is looking at a single element:
       //   - threadsPerBlockOrElementsPerThread is the number of threads per block;
       //   - elementsPerThread is always 1.

@@ -28,7 +28,7 @@ namespace cms::alpakatools {
 
 #ifdef ALPAKA_ACC_SYCL_ENABLED
   // overload for DevGenericSycl
-  inline int getDeviceIndex(alpaka::DevCpuSyclIntel const& device) { return 0; }  // FIXME_
+  inline int getDeviceIndex(alpaka::DevCpuSycl const& device) { return 0; }  // FIXME_
   inline int getDeviceIndex(alpaka::DevGpuSyclIntel const& device) { return 0; }  // FIXME_
 #endif  // ALPAKA_ACC_SYCL_ENABLED
 

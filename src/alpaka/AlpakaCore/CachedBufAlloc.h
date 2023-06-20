@@ -138,14 +138,14 @@ namespace cms::alpakatools {
 
     //! The caching memory allocator implementation for the pinned host memory
     template <typename TElem, typename TDim, typename TIdx>
-    struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpu, alpaka::QueueCpuSyclIntelNonBlocking, void> {
+    struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpu, alpaka::QueueCpuSyclNonBlocking, void> {
       template <typename TExtent>
       ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpu const& dev,
-                                                alpaka::QueueCpuSyclIntelNonBlocking queue,
+                                                alpaka::QueueCpuSyclNonBlocking queue,
                                                 TExtent const& extent) -> alpaka::BufCpu<TElem, TDim, TIdx> {
         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-        auto& allocator = getHostCachingAllocator<alpaka::QueueCpuSyclIntelNonBlocking>();
+        auto& allocator = getHostCachingAllocator<alpaka::QueueCpuSyclNonBlocking>();
 
         // FIXME the BufCpu does not support a pitch ?
         size_t size = alpaka::getExtentProduct(extent);
@@ -161,13 +161,13 @@ namespace cms::alpakatools {
 
     //! The caching memory allocator implementation for the SYCL CPU device
     template <typename TElem, typename TDim, typename TIdx, typename TQueue>
-    struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpuSyclIntel, TQueue, void> {
+    struct CachedBufAlloc<TElem, TDim, TIdx, alpaka::DevCpuSycl, TQueue, void> {
       template <typename TExtent>
-      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpuSyclIntel const& dev, TQueue queue, TExtent const& extent)
-          -> alpaka::BufCpuSyclIntel<TElem, TDim, TIdx> {
+      ALPAKA_FN_HOST static auto allocCachedBuf(alpaka::DevCpuSycl const& dev, TQueue queue, TExtent const& extent)
+          -> alpaka::BufCpuSycl<TElem, TDim, TIdx> {
         ALPAKA_DEBUG_MINIMAL_LOG_SCOPE;
 
-        auto& allocator = getDeviceCachingAllocator<alpaka::DevCpuSyclIntel, TQueue>(dev);
+        auto& allocator = getDeviceCachingAllocator<alpaka::DevCpuSycl, TQueue>(dev);
 
         // TODO implement pitch for TDim > 1
         size_t size = alpaka::getExtentProduct(extent);
@@ -177,7 +177,7 @@ namespace cms::alpakatools {
         // use a custom deleter to return the buffer to the CachingAllocator
         auto deleter = [alloc = &allocator](TElem* ptr) { alloc->free(ptr); };
 
-        return alpaka::BufCpuSyclIntel<TElem, TDim, TIdx>(
+        return alpaka::BufCpuSycl<TElem, TDim, TIdx>(
             dev, reinterpret_cast<TElem*>(memPtr), std::move(deleter), extent);
       }
     };
