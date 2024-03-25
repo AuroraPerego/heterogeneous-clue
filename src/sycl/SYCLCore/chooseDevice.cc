@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <vector>
 
 #include <CL/sycl.hpp>
@@ -6,6 +7,7 @@
 #include "chooseDevice.h"
 
 namespace cms::sycltools {
+
   static std::vector<sycl::device> discoverDevices() {
     std::vector<sycl::device> temp;
     std::vector<sycl::device> cpus = sycl::device::get_devices(sycl::info::device_type::cpu);
@@ -39,10 +41,16 @@ namespace cms::sycltools {
   }
 
   std::vector<sycl::device> const& enumerateDevices(bool verbose) {
-    static std::vector<sycl::device> devices = discoverDevices();
+    static const std::vector<sycl::device> devices = discoverDevices();
 
     if (verbose) {
-      std::cerr << "Found " << devices.size() << " SYCL devices:" << std::endl;
+      if (devices.size() == 0) {
+        std::cerr << "Found 0 SYCL devices\n";
+      } else if (devices.size() == 1) {
+        std::cerr << "Found 1 SYCL device:\n";
+      } else {
+        std::cerr << "Found " << devices.size() << " SYCL devices:\n";
+      }
       for (auto const& device : devices)
         std::cerr << "  - " << device.get_backend() << ' ' << device.get_info<cl::sycl::info::device::name>() << " ["
                   << device.get_info<sycl::info::device::driver_version>() << "]" << std::endl;
@@ -65,7 +73,7 @@ namespace cms::sycltools {
   }
 
   std::vector<sycl::platform> const& enumeratePlatforms(bool verbose) {
-    static std::vector<sycl::platform> platforms = discoverPlatforms();
+    static const std::vector<sycl::platform> platforms = discoverPlatforms();
 
     if (verbose) {
       std::cerr << "Found " << platforms.size() << " SYCL Platforms:" << std::endl;
@@ -75,12 +83,14 @@ namespace cms::sycltools {
     return platforms;
   }
 
-  sycl::device chooseDevice(edm::StreamID id, bool debug) {
+  sycl::device chooseDevice(edm::StreamID id, bool verbose) {
     auto const& devices = enumerateDevices();
     auto const& device = devices[id % devices.size()];
-    if (debug) {
-      std::cerr << "EDM stream " << id << " offload to " << device.get_info<cl::sycl::info::device::name>()
-                << " on backend " << device.get_backend() << std::endl;
+    if (verbose) {
+      std::ostringstream out;
+      out << "EDM stream " << id << " offload to " << device.get_info<sycl::info::device::name>();
+	      << " on backend " << device.get_backend() << "\n";
+      std::cerr << out.str();
     }
     return device;
   }

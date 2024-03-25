@@ -5,6 +5,7 @@
 
 #include "SYCLCore/ScopedContext.h"
 #include "chooseDevice.h"
+#include "SYCLCore/verbose.h"
 
 namespace cms::sycltools {
   namespace impl {
@@ -23,7 +24,7 @@ namespace cms::sycltools {
     }
 
     ScopedContextBase::ScopedContextBase(edm::StreamID streamID)
-        : stream_(chooseDevice(streamID), sycl_exception_handler, sycl::property::queue::in_order()) {}
+        : stream_(chooseDevice(streamID, ::verbose), sycl_exception_handler, sycl::property::queue::in_order()) {}
 
     ScopedContextBase::ScopedContextBase(ProductBase const &data)
         : stream_(data.mayReuseStream()
