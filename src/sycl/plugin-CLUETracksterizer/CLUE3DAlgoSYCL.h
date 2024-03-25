@@ -1,7 +1,7 @@
 #ifndef CLUE3DAlgo_SYCL_h
 #define CLUE3DAlgo_SYCL_h
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/device_unique_ptr.h"
 

@@ -1,7 +1,7 @@
 #include <chrono>
 #include <future>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/ScopedContext.h"
 #include "chooseDevice.h"
@@ -10,13 +10,13 @@
 namespace cms::sycltools {
   namespace impl {
 
-    void sycl_exception_handler(cl::sycl::exception_list exceptions) {
+    void sycl_exception_handler(sycl::exception_list exceptions) {
       std::ostringstream msg;
       msg << "Caught asynchronous SYCL exception(s):";
       for (auto const &exc_ptr : exceptions) {
         try {
           std::rethrow_exception(exc_ptr);
-        } catch (cl::sycl::exception const &e) {
+        } catch (sycl::exception const &e) {
           msg << '\n' << e.what();
         }
       }

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <vector>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "chooseDevice.h"
 
@@ -52,7 +52,7 @@ namespace cms::sycltools {
         std::cerr << "Found " << devices.size() << " SYCL devices:\n";
       }
       for (auto const& device : devices)
-        std::cerr << "  - " << device.get_backend() << ' ' << device.get_info<cl::sycl::info::device::name>() << " ["
+        std::cerr << "  - " << device.get_backend() << ' ' << device.get_info<sycl::info::device::name>() << " ["
                   << device.get_info<sycl::info::device::driver_version>() << "]" << std::endl;
       std::cerr << std::endl;
     }
@@ -88,7 +88,7 @@ namespace cms::sycltools {
     auto const& device = devices[id % devices.size()];
     if (verbose) {
       std::ostringstream out;
-      out << "EDM stream " << id << " offload to " << device.get_info<sycl::info::device::name>();
+      out << "EDM stream " << id << " offload to " << device.get_info<sycl::info::device::name>()
 	      << " on backend " << device.get_backend() << "\n";
       std::cerr << out.str();
     }

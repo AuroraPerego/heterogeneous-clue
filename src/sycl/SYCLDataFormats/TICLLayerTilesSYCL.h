@@ -4,7 +4,7 @@
 #ifndef TICLLayerTilesSYCL_h
 #define TICLLayerTilesSYCL_h
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "DataFormats/Common.h"
 #include "DataFormats/Math/normalizedPhi.h"

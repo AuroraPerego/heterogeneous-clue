@@ -5,7 +5,7 @@
 #include <mutex>
 #include <vector>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/getDeviceIndex.h"
 #include "SYCLCore/AllocatorConfig.h"

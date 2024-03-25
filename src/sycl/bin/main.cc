@@ -11,7 +11,7 @@
 #include <tbb/info.h>
 #include <tbb/task_arena.h>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "DataFormats/CLUE_config.h"
 #include "SYCLCore/chooseDevice.h"
