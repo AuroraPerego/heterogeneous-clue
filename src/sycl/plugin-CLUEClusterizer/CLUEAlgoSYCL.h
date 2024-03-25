@@ -3,7 +3,7 @@
 
 #include <optional>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/device_unique_ptr.h"
 

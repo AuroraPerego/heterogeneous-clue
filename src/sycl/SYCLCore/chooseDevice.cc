@@ -2,7 +2,7 @@
 #include <sstream>
 #include <vector>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "chooseDevice.h"
 

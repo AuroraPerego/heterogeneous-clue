@@ -1,7 +1,7 @@
 #ifndef CLUE_ALGO_KERNELS_H
 #define CLUE_ALGO_KERNELS_H
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 #include "SYCLDataFormats/LayerTilesSYCL.h"
 #include "SYCLDataFormats/PointsCloudSYCL.h"
 

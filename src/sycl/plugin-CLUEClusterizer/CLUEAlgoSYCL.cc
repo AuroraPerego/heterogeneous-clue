@@ -1,5 +1,3 @@
-#include <CL/sycl.hpp>
-
 #include "DataFormats/PointsCloud.h"
 
 #include "CLUEAlgoSYCL.h"
@@ -24,7 +22,7 @@ void CLUEAlgoSYCL::setup(PointsCloud const &host_pc, PointsCloudSYCL &d_points, 
   stream.memcpy(d_points.layer.get(), host_pc.layer.data(), sizeof(int) * host_pc.x.size());
   stream.memcpy(d_points.weight.get(), host_pc.weight.data(), sizeof(float) * host_pc.x.size());
   // result and internal variables
-  stream.memset(d_seeds.get(), 0x00, sizeof(cms::sycltools::VecArray<int, maxNSeeds>));
+  stream.memset(d_seeds.get(), 0x00, sizeof(cms::sycltools::VecArray<int, maxNSeeds>)).wait();
   const sycl::range<1> blockSize(1024);
   sycl::range<1> gridSize(ceil(host_pc.x.size() / static_cast<float>(blockSize[0])));
   auto workDiv = sycl::nd_range<1>(gridSize * blockSize, blockSize);

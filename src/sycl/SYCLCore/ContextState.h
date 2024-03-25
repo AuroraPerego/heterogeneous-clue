@@ -3,7 +3,7 @@
 
 #include <memory>
 #include <optional>
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 namespace cms {
   namespace sycltools {

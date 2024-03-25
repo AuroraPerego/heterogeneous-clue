@@ -1,4 +1,4 @@
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "Framework/EventSetup.h"
 #include "Framework/Event.h"

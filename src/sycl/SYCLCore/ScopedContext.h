@@ -3,7 +3,7 @@
 
 #include <optional>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/ContextState.h"
 #include "SYCLCore/Product.h"

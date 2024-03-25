@@ -1,7 +1,7 @@
 #ifndef SYCLCore_getPlatformIndex
 #define SYCLCore_getPlatformIndex
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/chooseDevice.h"
 

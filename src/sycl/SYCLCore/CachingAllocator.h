@@ -12,7 +12,7 @@
 #include <tuple>
 #include <optional>
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 /* 
   * SYCL Caching Allocator

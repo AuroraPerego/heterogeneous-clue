@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <cstdint>
 // SYCL include
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 #include "SYCLCore/VecArray.h"
 #include "DataFormats/LayerTilesConstants.h"
 

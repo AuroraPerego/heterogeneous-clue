@@ -1,7 +1,7 @@
 #ifndef SYCLCore_getDeviceIndex_h
 #define SYCLCore_getDeviceIndex_h
 
-#include <CL/sycl.hpp>
+#include <sycl/sycl.hpp>
 
 #include "SYCLCore/chooseDevice.h"
 
