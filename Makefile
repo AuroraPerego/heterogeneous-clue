@@ -578,7 +578,7 @@ $(foreach target,$(TARGETS_ALL),$(eval $(call CLEAN_template,$(target))))
 
 # Data rules
 $(DATA_DEPS): $(DATA_CLUE_TAR_GZ) | $(DATA_BASE)/md5.txt
-	cd $(DATA_BASE) && tar zxf $(DATA_CLUE_TAR_GZ)
+	cd $(DATA_BASE) && tar -xf $(DATA_CLUE_TAR_GZ)
 	cd $(DATA_BASE) && md5sum *csv *.bin | diff -u md5.txt -
 	cd $(DATA_BASE) && mkdir input && mkdir output && cd $(DATA_BASE)/output && mkdir reference
 	cd $(DATA_BASE) && mv ref* $(DATA_BASE)/output/reference
