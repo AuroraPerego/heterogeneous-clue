@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <filesystem>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -65,7 +66,7 @@ int main(int argc, char** argv) try {
       ++i;
       std::string device = *i;
       device += ",host";
-      setenv("SYCL_DEVICE_FILTER", device.c_str(), true);
+      setenv("ONEAPI_DEVICE_SELECTOR", device.c_str(), true);
     } else if (*i == "--dim") {
       ++i;
       dim = std::stoi(*i);

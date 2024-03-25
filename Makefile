@@ -1,5 +1,10 @@
 export BASE_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
+# Speacial characters
+COMMA:= ,
+EMPTY:=
+SPACE:= $(EMPTY) $(EMPTY)
+
 # Compiler
 export CC  := gcc
 export CXX := g++
@@ -23,10 +28,10 @@ $(warning GCC 10.3 is known to have issues compiled CUDA code, please consider u
 endif
 
 # Build flags
-USER_CXXFLAGS := 
+USER_CXXFLAGS :=
 HOST_CXXFLAGS := -O2 -fPIC -fdiagnostics-show-option -felide-constructors -fmessage-length=0 -fno-math-errno -ftree-vectorize -fvisibility-inlines-hidden --param vect-max-version-for-alias-checks=50 -mavx -march=native -mtune=native -pipe -pthread -Werror=address -Wall -Werror=array-bounds -Wno-attributes -Werror=conversion-null -Werror=delete-non-virtual-dtor -Wno-deprecated -Werror=format-contains-nul -Werror=format -Wno-long-long -Werror=main -Werror=missing-braces -Werror=narrowing -Wno-non-template-friend -Wnon-virtual-dtor -Werror=overflow -Werror=overlength-strings -Wparentheses -Werror=pointer-arith -Wno-psabi -Werror=reorder -Werror=return-local-addr -Wreturn-type -Werror=return-type -Werror=sign-compare -Werror=strict-aliasing -Wstrict-overflow -Werror=switch -Werror=type-limits -Wunused -Werror=unused-but-set-variable -Wno-unused-local-typedefs -Werror=unused-value -Wno-error=unused-variable -Wno-vla -Werror=write-strings -Wfatal-errors
 export CXXFLAGS := -std=c++17 $(HOST_CXXFLAGS) $(USER_CXXFLAGS) -g
-export LDFLAGS := -O2 -fPIC -pthread -Wl,-E -lstdc++fs -ldl 
+export LDFLAGS := -O2 -fPIC -pthread -Wl,-E -lstdc++fs -ldl
 export LDFLAGS_NVCC := -ccbin $(CXX) --linker-options '-E' --linker-options '-lstdc++fs'
 export SO_LDFLAGS := -Wl,-z,defs
 export SO_LDFLAGS_NVCC := --linker-options '-z,defs'
@@ -96,75 +101,118 @@ export ROCM_LDFLAGS := -L$(ROCM_LIBDIR) -lamdhip64
 export ROCM_TEST_CXXFLAGS := -DGPU_DEBUG
 endif
 
-# SYCL 
+# SYCL
 SYCL_UNSUPPORTED_CXXFLAGS := --param vect-max-version-for-alias-checks=50 -Wno-non-template-friend -Werror=format-contains-nul -Werror=return-local-addr -Werror=unused-but-set-variable
 
-ifdef USE_SYCL_PATATRACK
-SYCL_BASE     := /data2/user/wredjeb/sycl_workspace/build
-USER_SYCLFLAGS := -fsycl-targets=nvptx64-nvidia-cuda -std=c++17
-export SYCL_CXX      := $(SYCL_BASE)/bin/clang++
-export SYCL_CXXFLAGS := -fsycl $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) $(USER_SYCLFLAGS)
-
-else ifdef USE_SYCL_LLVM
-SYCL_BASE := /cvmfs/patatrack.cern.ch/externals/x86_64/rhel8/intel/sycl/build-2022-09
-
-USER_SYCLFLAGS := -std=c++17 
-# CPU + NVIDIA GPU
-SYCL_AOTFLAGS := -fsycl-targets=spir64_x86_64,nvptx64-nvidia-cuda -fno-bundle-offload-arch --cuda-path=$(CUDA_BASE) -Wno-unknown-cuda-version -Wno-linker-warnings
-
-# CPU + AMD GPU
-#SYCL_AOTFLAGS := -fsycl-targets=spir64_x86_64,amdgcn-amd-amdhsa -Xsycl-target-backend=amdgcn-amd-amdhsa "--offload-arch=gfx900" --rocm-path=$(ROCM_BASE) -Wno-linker-warnings
-
-# -fno-bundle-offload-arch              Specify that the offload bundler should not identify a bundle with specific arch.
-#                                       For example, the bundle for `nvptx64-nvidia-cuda-sm_80` uses the bundle tag
-#                                       `nvptx64-nvidia-cuda` when used. This allows .o files to contain .bc bundles
-#                                       that are unspecific to a particular arch version.
-#
-# --offload-arch=sm_60                  CUDA offloading device architecture (e.g. sm_35), or HIP offloading target ID in
-# --offload-arch=sm_70                  the form of a device architecture followed by target ID features delimited by a
-# --offload-arch=sm_75                  colon. Each target ID feature is a pre-defined string followed by a plus or minus
-#                                       sign (e.g. gfx908:xnack+:sramecc-).
-#                                       May be specified more than once.
-
-export SYCL_CXX      := $(SYCL_BASE)/bin/clang++
-export SYCL_CXXFLAGS := -fsycl $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) $(USER_SYCLFLAGS) $(SYCL_AOTFLAGS)
-# makes OpenCL CPU visible
-export OCL_ICD_FILENAMES := /cvmfs/patatrack.cern.ch/externals/x86_64/rhel8/intel/sycl/runtime/intel/oclcpuexp_2022.14.8.0.04/x64/libintelocl.so
-
-else
-ONEAPI_BASE := /cvmfs/projects.cern.ch/intelsw/oneAPI/linux/x86_64/2022
-SYCL_VERSION  := 2022.2.0
+ONEAPI_BASE := /opt/intel/oneapi
+SYCL_VERSION  := latest
 ifneq ($(wildcard $(ONEAPI_BASE)),)
-ONEAPI_ENV    := $(ONEAPI_BASE)/setvars.sh
-SYCL_BASE     := $(ONEAPI_BASE)/compiler/$(SYCL_VERSION)/linux
-TBB_BASE := $(ONEAPI_BASE)/tbb/latest
-TBB_LIBDIR := $(TBB_BASE)/lib/intel64/gcc4.8
-USER_SYCLFLAGS := -fp-model=precise -fimf-arch-consistency=true -no-fma -Wsycl-strict -fsycl-targets=spir64_x86_64,spir64_gen -Xsycl-target-backend=spir64_gen "-device xe_hp_sdv"
-export SYCL_CXX      := $(SYCL_BASE)/bin/dpcpp
-export SYCL_CXXFLAGS := -fsycl -Wsycl-strict $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) $(USER_SYCLFLAGS)
-endif
+  ONEAPI_ENV    := $(ONEAPI_BASE)/setvars.sh
+  SYCL_BASE     := $(ONEAPI_BASE)/compiler/$(SYCL_VERSION)
+  TBB_BASE := $(ONEAPI_BASE)/tbb/latest
+  TBB_LIBDIR := $(TBB_BASE)/lib
+  SYCL_LIBDIR := $(SYCL_BASE)/lib
+  USER_SYCLFLAGS :=
+  SYCL_CXX      := $(SYCL_BASE)/bin/icpx
+  SYCL_PATH     := $(SYCL_BASE)/bin
+  SYCL_LDPATH   := $(SYCL_BASE)/lib
+  # use the oneAPI CPU OpenCL runtime
+  export OCL_ICD_FILENAMES := $(SYCL_BASE)/lib/libintelocl.so
 endif
 
-# to use a different toolchain
-#   - unset ONEAPI_ENV
-#   - set SYCL_BASE appropriately
+ifneq ($(wildcard $(SYCL_BASE)),)
+  # SYCL targets
+  # compile for the default spir64 JIT target
+  #JIT_TARGETS      := spir64
+  #JIT_FLAGS        :=
+  # compile AOT for x86_64 CPUs, targetting the Intel OpenCL runtime
+  AOT_CPU_TARGETS  := spir64_x86_64
+  AOT_CPU_FLAGS    :=
+  OCLOC_IDS = pvc acm_g10
+  # compile AOT for the Intel GPUs identified by the $(OCLOC_IDS) architectures
+  AOT_INTEL_TARGETS := $(foreach ARCH,$(OCLOC_IDS),intel_gpu_$(ARCH))
+  AOT_INTEL_FLAGS   :=
+  # compile AOT for the NVIDIA GPUs identified by the $(CUDA_ARCH) CUDA architectures
+  #AOT_CUDA_TARGETS := $(foreach ARCH,$(CUDA_ARCH),nvidia_gpu_sm_$(ARCH))
+  # currently supports a single CUDA arch, use the lowest architecture for forward compatibility
+  AOT_CUDA_TARGETS := nvidia_gpu_sm_$(firstword $(CUDA_ARCH))
+  AOT_CUDA_FLAGS   := --cuda-path=$(CUDA_BASE) -Wno-unknown-cuda-version
+  # compile AOT for the AMD GPUs identified by the $(ROCM_ARCH) ROCm architectures
+  #AOT_ROCM_TARGETS := $(foreach ARCH,$(ROCM_ARCH),amd_gpu_$(ARCH))
+  # currently supports a single ROCm arch
+  #AOT_ROCM_TARGETS := amd_gpu_$(firstword $(ROCM_ARCH))
+  #AOT_ROCM_FLAGS   := --rocm-path=$(ROCM_BASE)
 
-# check if libraries are under lib or lib64
-ifdef SYCL_BASE
-ifneq ($(wildcard $(SYCL_BASE)/lib/libsycl.so),)
-SYCL_LIBDIR := $(SYCL_BASE)/lib
-else ifneq ($(wildcard $(SYCL_BASE)/lib64/libsycl.so),)
-SYCL_LIBDIR := $(SYCL_BASE)/lib64
-else
-SYCL_BASE :=
-endif
-endif
-# check oneTBB
-ifdef SYCL_BASE
-ifdef CUDA_BASE
-export SYCL_CUDA_PLUGIN := $(wildcard $(SYCL_LIBDIR)/libpi_cuda.so)
-export SYCL_CUDA_FLAGS  := --cuda-path=$(CUDA_BASE) -Wno-unknown-cuda-version
-endif
+  # compile JIT and AOT for all the targets
+  SYCL_TARGETS      := $(subst $(SPACE),$(COMMA),$(strip $(JIT_TARGETS) $(AOT_CPU_TARGETS) $(AOT_INTEL_TARGETS) $(AOT_CUDA_TARGETS) $(AOT_ROCM_TARGETS)))
+  SYCL_FLAGS        := -fsycl -fsycl-targets=$(SYCL_TARGETS) -Xclang -opaque-pointers
+  SYCL_LDFLAGS      := -fsycl-fp32-prec-sqrt -flink-huge-device-code $(JIT_FLAGS) $(AOT_CPU_FLAGS) $(AOT_INTEL_FLAGS) $(AOT_CUDA_FLAGS) $(AOT_ROCM_FLAGS)
+
+  # other SYCL options
+  #  -fsycl-device-code-split=per_kernel
+  #    build one binary image per kernel (very slow), to allow kernel built for subgroup sizes not supported by all devices;
+  #    from https://github.com/intel/llvm/blob/sycl/sycl/doc/UsersManual.md :
+  #      Specifies SYCL device code module assembly. Mode is one of the following:
+  #      * per_kernel - creates a separate device code module for each SYCL kernel.
+  #        Each device code module will contain a kernel and all its dependencies,
+  #        such as called functions and used variables.
+  #      * per_source - creates a separate device code module for each source
+  #        (translation unit). Each device code module will contain a bunch of
+  #        kernels grouped on per-source basis and all their dependencies, such as
+  #        all used variables and called functions, including the `SYCL_EXTERNAL`
+  #        macro-marked functions from other translation units.
+  #      * off - creates a single module for all kernels. If `-fsycl-no-rdc` is
+  #        specified, the behavior is the same as per_source.
+  #      * auto - the compiler will use a heuristic to select the best way of
+  #        splitting device code. This is default mode.
+  #
+  #  -fno-sycl-early-optimizations
+  #    workaround for the unexpected intrinsic in oneApi 2022.2.0, generates very slow code;
+  #    from https://github.com/intel/llvm/blob/sycl/sycl/doc/UsersManual.md :
+  #      Disables intermediate representation optimization pipeline before translation to SPIR-V.
+  #
+  #  -fsycl-max-parallel-link-jobs=8
+  #    from https://github.com/intel/llvm/blob/sycl/sycl/doc/UsersManual.md :
+  #      Experimental feature. When specified, it informs the compiler
+  #      that it can simultaneously spawn up to `N` processes to perform
+  #      actions required to link the DPC++ application. This option is
+  #      only useful in SYCL mode. It only takes effect if link action
+  #      needs to be executed, i.e. it won't have any effect in presence of
+  #      options like `-c` or `-E`. Default value of `N` is 1.
+  #
+  #  -Xsycl-target-backend=intel_gpu_pvc '-options -ze-intel-enable-auto-large-GRF-mode'
+  #    enable Large Register Mode for Intel Ponte Vecchio GPUs;
+  #    from https://www.intel.com/content/www/us/en/docs/oneapi/optimization-guide-gpu/2023-2/small-register-mode-vs-large-register-mode.html :
+  #      Intel® Data Center GPU Max Series products support two GRF modes: small GRF mode and large GRF mode.
+  #      Each Execution Unit (EU) has a total of 64 KB of storage available in registers. In Small GRF mode,
+  #      a single hardware thread in an EU can access 128 GRF registers, each of which is 64B wide. In this mode,
+  #      8 hardware threads are available per EU. In Large GRF mode, a single hardware thread in an EU can access
+  #      256 GRF registers, each of which is 64B wide. In this mode, 4 hardware threads are available per EU.
+  #    Note: using `-Xsycl-target-backend=intel_gpu_pvc` confuses the frontend, and ends up passing the flags also
+  #    to the CPU AOT compiler, which does not understand them and fails with an error.
+  #    Using `-Xsycl-target-backend=spir64_gen` seems to work better, at least in some cases.
+  #
+  #  -fno-bundle-offload-arch
+  #    from https://intel.github.io/llvm-docs/clang/ClangCommandLineReference.html
+  #      Specify that the offload bundler should not identify a bundle with specific arch.
+  #      For example, the bundle for `nvptx64-nvidia-cuda-sm_80` uses the bundle tag `nvptx64-nvidia-cuda` when used.
+  #      This allows .o files to contain .bc bundles that are unspecific to a particular arch version.
+  #
+  #  -Wno-linker-warnings
+  #    ...
+
+  export SYCL_CXX
+  export SYCL_CXXFLAGS := -fsycl $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) $(USER_SYCLFLAGS) $(SYCL_FLAGS)
+  export SYCL_LDFLAGS
+
+  # add the SYCL paths to the PATH and LD_LIBRARY_PATH
+  export PATH := $(SYCL_PATH):$(PATH)
+  export LD_LIBRARY_PATH := $(SYCL_LDPATH):$(TBB_LIBDIR):$(LD_LIBRARY_PATH)
+
+  # enable double precision floating point emulation for Intel GPUs
+  # see https://github.com/intel/compute-runtime/blob/master/opencl/doc/FAQ.md#feature-double-precision-emulation-fp64
+  export IGC_EnableDPEmulation := 1
+  export OverrideDefaultFP64Settings := 1
 endif
 
 # Input data definitions
@@ -425,9 +473,7 @@ ifdef ROCM_BASE
 endif
 	@echo -n '$(KOKKOS_LIBDIR):'                                            >> $@
 ifneq ($(SYCL_BASE),)
-ifeq ($(wildcard $(ONEAPI_ENV)),)
-	@echo -n '$(SYCL_LIBDIR):'                                              >> $@
-endif
+	@echo -n '$(SYCL_LDPATH):'                                              >> $@
 endif
 	@echo '$$LD_LIBRARY_PATH'                                               >> $@
 	@echo -n 'export PATH='                                                 >> $@
@@ -438,16 +484,16 @@ ifdef ROCM_BASE
 	@echo -n '$(ROCM_BASE)/bin:'                                            >> $@
 endif
 ifneq ($(SYCL_BASE),)
-ifeq ($(wildcard $(ONEAPI_ENV)),)
-	@echo -n '$(SYCL_BASE)/bin:'                                            >> $@
-endif
+	@echo -n '$(SYCL_PATH):'                                                >> $@
 endif
 	@echo '$$PATH'                                                          >> $@
-# check if oneAPI environment file exists
-ifneq ($(wildcard $(ONEAPI_ENV)),)
-	@echo 'source $(ONEAPI_ENV)'                                            >> $@
-else
+ifneq ($(SYCL_BASE),)
+	@# load the CPU OpenCL runtime
 	@echo 'export OCL_ICD_FILENAMES=$(OCL_ICD_FILENAMES)'                   >> $@
+	@# enable double precision floating point emulation for Intel GPUs
+	@# see https://github.com/intel/compute-runtime/blob/master/opencl/doc/FAQ.md#feature-double-precision-emulation-fp64
+	@echo 'export IGC_EnableDPEmulation=1'                                  >> $@
+	@echo 'export OverrideDefaultFP64Settings=1'                            >> $@
 endif
 
 define TARGET_template
@@ -534,9 +580,9 @@ $(foreach target,$(TARGETS_ALL),$(eval $(call CLEAN_template,$(target))))
 $(DATA_DEPS): $(DATA_CLUE_TAR_GZ) | $(DATA_BASE)/md5.txt
 	cd $(DATA_BASE) && tar zxf $(DATA_CLUE_TAR_GZ)
 	cd $(DATA_BASE) && md5sum *csv *.bin | diff -u md5.txt -
-	cd $(DATA_BASE) && mkdir input && mkdir output && cd $(DATA_BASE)/output && mkdir reference 
-	cd $(DATA_BASE) && mv ref* $(DATA_BASE)/output/reference 
-	cd $(DATA_BASE) && mv *.bin $(DATA_BASE)/input 
+	cd $(DATA_BASE) && mkdir input && mkdir output && cd $(DATA_BASE)/output && mkdir reference
+	cd $(DATA_BASE) && mv ref* $(DATA_BASE)/output/reference
+	cd $(DATA_BASE) && mv *.bin $(DATA_BASE)/input
 	touch $(DATA_DEPS)
 
 $(DATA_CLUE_TAR_GZ): | $(DATA_BASE)/url.txt
