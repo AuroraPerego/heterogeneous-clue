@@ -104,19 +104,14 @@ endif
 # SYCL
 SYCL_UNSUPPORTED_CXXFLAGS := --param vect-max-version-for-alias-checks=50 -Wno-non-template-friend -Werror=format-contains-nul -Werror=return-local-addr -Werror=unused-but-set-variable
 
-ONEAPI_BASE := /opt/intel/oneapi
-SYCL_VERSION  := latest
-ifneq ($(wildcard $(ONEAPI_BASE)),)
-  ONEAPI_ENV    := $(ONEAPI_BASE)/setvars.sh
-  SYCL_BASE     := $(ONEAPI_BASE)/compiler/$(SYCL_VERSION)
-  TBB_BASE := $(ONEAPI_BASE)/tbb/latest
-  TBB_LIBDIR := $(TBB_BASE)/lib
-  SYCL_LIBDIR := $(SYCL_BASE)/lib
-  USER_SYCLFLAGS :=
-  SYCL_CXX      := $(SYCL_BASE)/bin/icpx
-  # use the oneAPI CPU OpenCL runtime
-  export OCL_ICD_FILENAMES := $(SYCL_BASE)/lib/libintelocl.so
-endif
+SYCL_BASE     := $ /data/user/aperego/AdaptiveCpp/build2
+SYCL_PATH     := $(SYCL_BASE)/bin
+SYCL_LDPATH   := $(SYCL_BASE)/lib
+SYCL_LIBDIR := $(SYCL_BASE)/lib
+USER_SYCLFLAGS :=
+SYCL_CXX      := $(SYCL_BASE)/bin/acpp --gcc-install-dir=/cvmfs/cms.cern.ch/el9_amd64_gcc11/external/gcc/11.4.1-30ebdc301ebd200f2ae0e3d880258e65/lib/gcc/x86_64-redhat-linux-gnu/11.4.1
+# use the oneAPI CPU OpenCL runtime
+export OCL_ICD_FILENAMES :=
 
 ifneq ($(wildcard $(SYCL_BASE)),)
   # SYCL targets
@@ -143,8 +138,9 @@ ifneq ($(wildcard $(SYCL_BASE)),)
 
   # compile JIT and AOT for all the targets
   SYCL_TARGETS      := $(subst $(SPACE),$(COMMA),$(strip $(JIT_TARGETS) $(AOT_CPU_TARGETS) $(AOT_INTEL_TARGETS) $(AOT_CUDA_TARGETS) $(AOT_ROCM_TARGETS)))
-  SYCL_FLAGS        := -fsycl -fsycl-targets=$(SYCL_TARGETS) -Xclang -opaque-pointers
-  SYCL_LDFLAGS      := -fsycl-fp32-prec-sqrt -flink-huge-device-code $(JIT_FLAGS) $(AOT_CPU_FLAGS) $(AOT_INTEL_FLAGS) $(AOT_CUDA_FLAGS) $(AOT_ROCM_FLAGS)
+  SYCL_FLAGS        := --acpp-targets="generic;omp;cuda:sm_70,sm_75,sm_89" -Wno-unknown-cuda-version
+  # -fsycl -fsycl-targets=$(SYCL_TARGETS) -Xclang -opaque-pointers
+  SYCL_LDFLAGS      := $(JIT_FLAGS) $(AOT_CPU_FLAGS) $(AOT_INTEL_FLAGS) $(AOT_CUDA_FLAGS) $(AOT_ROCM_FLAGS)
 
   # other SYCL options
   #  -fsycl-device-code-split=per_kernel
@@ -200,7 +196,7 @@ ifneq ($(wildcard $(SYCL_BASE)),)
   #    ...
 
   export SYCL_CXX
-  export SYCL_CXXFLAGS := -fsycl $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) $(USER_SYCLFLAGS) $(SYCL_FLAGS)
+  export SYCL_CXXFLAGS := $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) $(USER_SYCLFLAGS) $(SYCL_FLAGS)
   export SYCL_LDFLAGS
 
   # add the SYCL paths to the PATH and LD_LIBRARY_PATH
@@ -492,6 +488,7 @@ ifneq ($(SYCL_BASE),)
 	@# see https://github.com/intel/compute-runtime/blob/master/opencl/doc/FAQ.md#feature-double-precision-emulation-fp64
 	@echo 'export IGC_EnableDPEmulation=1'                                  >> $@
 	@echo 'export OverrideDefaultFP64Settings=1'                            >> $@
+	@echo 'source /cvmfs/cms.cern.ch/el9_amd64_gcc11/external/llvm/16.0.3-d5387186335b0dd85e1c294a1fd64dd0/etc/profile.d/init.sh' >> $@
 endif
 
 define TARGET_template
