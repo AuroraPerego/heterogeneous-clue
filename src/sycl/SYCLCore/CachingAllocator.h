@@ -1,7 +1,6 @@
 #ifndef SYCLCore_CachingAllocator_h
 #define SYCLCore_CachingAllocator_h
 
-#include <cassert>
 #include <exception>
 #include <iomanip>
 #include <iostream>
@@ -13,6 +12,7 @@
 #include <optional>
 
 #include <sycl/sycl.hpp>
+#include "SYCLCore/assert.h"
 
 /* 
   * SYCL Caching Allocator
@@ -212,7 +212,7 @@ namespace cms::sycltools {
 
       bool recache = (cachedBytes_.free + block.bytes <= maxCachedBytes_) and reuseSameQueueAllocations_;
       if (recache) {
-        block.event = block.queue->ext_oneapi_submit_barrier();
+        block.event = block.queue->get_wait_list().size() ? block.queue->get_wait_list().back() : sycl::event{};
         cachedBytes_.free += block.bytes;
         cachedBlocks_.insert(std::make_pair(block.bin, block));
 
@@ -354,7 +354,7 @@ namespace cms::sycltools {
           block = blockIterator->second;
           block.queue = std::move(queue);
 
-          block.event = block.queue->ext_oneapi_submit_barrier();
+          block.event = block.queue->get_wait_list().size() ? block.queue->get_wait_list().back() : sycl::event{};
 
           // insert the cached block into the live blocks
           liveBlocks_[block.d_ptr] = block;
@@ -430,7 +430,7 @@ namespace cms::sycltools {
       }
 
       // create a new event associated to the "synchronisation device"
-      block.event = block.queue->ext_oneapi_submit_barrier();
+      block.event = block.queue->get_wait_list().size() ? block.queue->get_wait_list().back() : sycl::event{};
 
       {
         std::scoped_lock lock(mutex_);

@@ -22,7 +22,7 @@ public:
     constexpr float etaRange = T::maxEta - T::minEta;
     static_assert(etaRange >= 0.f);
     float r = T::nEtaBins / etaRange;
-    int etaBin = (sycl::abs(eta) - T::minEta) * r;
+    int etaBin = (::hipsycl::sycl::detail::__hipsycl_abs(eta) - T::minEta) * r;
     etaBin = std::clamp(etaBin, 0, T::nEtaBins - 1);
     return etaBin;
   }

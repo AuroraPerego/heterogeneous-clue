@@ -85,7 +85,7 @@ namespace cms::sycltools {
 
   ScopedContextProduce::~ScopedContextProduce() {
     // the barrier should be a no-op on an ordered queue, but is used to mark the end of the data processing
-    event_ = stream().ext_oneapi_submit_barrier();
+    event_ = stream().get_wait_list().size() ? stream().get_wait_list().back() : sycl::event{};
   }
 
   ////////////////////
