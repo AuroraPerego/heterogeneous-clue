@@ -15,6 +15,7 @@
 
 #include "DataFormats/CLUE_config.h"
 #include "SYCLCore/chooseDevice.h"
+#include "SYCLCore/verbose.h"
 #include "EventProcessor.h"
 #include "PosixClockGettime.h"
 
@@ -22,11 +23,12 @@ namespace {
   void print_help(std::string const& name) {
     std::cout
         << name
-        << ": [--device DEV] [--dim D] [--numberOfThreads NT] [--numberOfStreams NS] [--maxEvents ME] [--inputFile "
+        << ": [--verbose] [--device DEV] [--dim D] [--numberOfThreads NT] [--numberOfStreams NS] [--maxEvents ME] [--inputFile "
            "PATH] [--configFile PATH] [--transfer] [--validation] "
            "[--empty]\n\n"
         << "Options\n"
         << " --device            Specifies the device which should run the code\n"
+		<< " --verbose Write information about the devices found on the system and used by each stream.\n"
         << " --dim               Dimensionality of the algorithm (default 2 to run CLUE 2D, use 3 to run CLUE 3D)\n"
         << " --numberOfThreads   Number of threads to use (default 1, use 0 to use all CPU cores)\n"
         << " --numberOfStreams   Number of concurrent events (default 0 = numberOfThreads)\n"
@@ -48,6 +50,7 @@ namespace {
 int main(int argc, char** argv) try {
   // Parse command line arguments
   std::vector<std::string> args(argv, argv + argc);
+  std::string deviceSelection;
   int dim = 2;
   int numberOfThreads = 1;
   int numberOfStreams = 0;
@@ -62,11 +65,12 @@ int main(int argc, char** argv) try {
     if (*i == "-h" or *i == "--help") {
       print_help(args.front());
       return EXIT_SUCCESS;
+	} else if (*i == "--verbose") {
+      verbose = true;
     } else if (*i == "--device") {
       ++i;
-      std::string device = *i;
-      device += ",host";
-      setenv("ONEAPI_DEVICE_SELECTOR", device.c_str(), true);
+	  deviceSelection = *i;
+      setenv("ONEAPI_DEVICE_SELECTOR", deviceSelection.c_str(), true);
     } else if (*i == "--dim") {
       ++i;
       dim = std::stoi(*i);
@@ -139,7 +143,14 @@ int main(int argc, char** argv) try {
   }
 
   // Initialise the SYCL runtime
-  cms::sycltools::enumerateDevices(true);
+  if (cms::sycltools::enumerateDevices(verbose).empty()) {
+    if (deviceSelection.empty()) {
+      std::cerr << "Error: no SYCL devices found.\n";
+    } else {
+      std::cerr << "Error: no SYCL devices matching the selection \"" << deviceSelection << "\" found.\n";
+    }
+    exit(EXIT_FAILURE);
+  }
 
   // Initialise the EventProcessor
   std::vector<std::string> edmodules;
