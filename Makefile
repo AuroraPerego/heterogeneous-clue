@@ -255,7 +255,7 @@ else
 NEED_BOOST := $(shell awk '/.define *BOOST_VERSION\>/ { if ($$3 < $(BOOST_MIN_VERSION)) print "true"; else print "false"; }' $(BOOST_BASE)/include/boost/version.hpp )
 endif
 ifeq ($(NEED_BOOST),true)
-BOOST_BASE := $(EXTERNAL_BASE)/boost
+BOOST_BASE := /data/user/fwyzard/pixeltrack-standalone/external/boost
 endif
 export BOOST_DEPS := $(BOOST_BASE)
 export BOOST_CXXFLAGS := -isystem $(BOOST_BASE)/include

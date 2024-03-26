@@ -70,7 +70,7 @@ int main(int argc, char** argv) try {
     } else if (*i == "--device") {
       ++i;
 	  deviceSelection = *i;
-      setenv("SYCL_DEVICE_FILTER", deviceSelection.c_str(), true);
+      setenv("HIPSYCL_VISIBILITY_MASK", deviceSelection.c_str(), true);
     } else if (*i == "--dim") {
       ++i;
       dim = std::stoi(*i);
