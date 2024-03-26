@@ -54,7 +54,7 @@ void kernel_calculate_density(
           int j = d_hist[layeri][binId][binIter];
           float xj = d_points->x[j];
           float yj = d_points->y[j];
-          float dist_ij = std::sqrt((xi - xj) * (xi - xj) + (yi - yj) * (yi - yj));
+          float dist_ij = sycl::sqrt((xi - xj) * (xi - xj) + (yi - yj) * (yi - yj));
           if (dist_ij <= dc) {
             rhoi += (i == j ? 1.f : 0.5f) * d_points->weight[j];
           }

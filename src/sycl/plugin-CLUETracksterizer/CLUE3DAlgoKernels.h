@@ -113,7 +113,7 @@ void kernel_calculate_density(TICLLayerTilesSYCL *d_hist,
               auto energyToAdd =
                   ((clusterIdx == otherClusterIdx) ? 1.f : kernelDensityFactor * factor_same_layer_different_cluster) *
                   d_points->energy[otherClusterIdx];
-              rhoi += energyToAdd;
+             //FIXME rhoi += energyToAdd;
             }
           }  // end of loop on possible compatible clusters
         }    // end of loop over phi-bin region
