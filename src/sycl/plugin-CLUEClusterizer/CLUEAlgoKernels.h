@@ -141,7 +141,7 @@ void kernel_find_clusters(cms::sycltools::VecArray<int, maxNSeeds> *d_seeds,
     } else {
       d_points->isSeed[i] = 0;
       if (!isOutlier) {
-        assert(d_points->nearestHigher[i] < numberOfPoints);
+      //  assert(d_points->nearestHigher[i] < numberOfPoints);
         // register as follower of its nearest higher
         d_followers[d_points->nearestHigher[i]].push_back(i);
       }

@@ -41,8 +41,9 @@ namespace cms::sycltools {
         return std::make_unique<sycl::queue>(
             dev,
             syclExceptionHandler,
-            sycl::property_list{sycl::property::queue::in_order(),
-                                sycl::property::queue::hipSYCL_coarse_grained_events()});
+            sycl::property_list{sycl::property::queue::in_order()
+                                //, sycl::property::queue::hipSYCL_coarse_grained_events()
+								});
       });
     }
 
