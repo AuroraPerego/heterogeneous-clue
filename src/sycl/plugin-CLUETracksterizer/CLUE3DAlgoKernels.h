@@ -34,7 +34,7 @@ void kernel_compute_histogram(TICLLayerTilesSYCL *d_hist,
   auto clusterIdx = item.get_group(0) * item.get_local_range().get(0) + item.get_local_id(0);
   if (clusterIdx < numberOfPoints) {
     d_hist[d_points->layer[clusterIdx]].fill(
-        ::hipsycl::sycl::detail::__hipsycl_abs(d_points->eta[clusterIdx]), d_points->phi[clusterIdx], clusterIdx);
+        sycl::fabs(d_points->eta[clusterIdx]), d_points->phi[clusterIdx], clusterIdx);
   }
 }
 
@@ -176,7 +176,7 @@ void kernel_compute_distance_to_higher(TICLLayerTilesSYCL *d_hist,
             //              auto const &clustersOnOtherLayer = points[currentLayer];
             auto dist = maxDelta;
             auto dist_transverse = maxDelta;
-            int dist_layers = ::hipsycl::sycl::detail::__hipsycl_abs(currentLayer - layerId);
+            int dist_layers = sycl::abs(currentLayer - layerId);
             dist_transverse = distanceSqr(d_points->r_over_absz[clusterIdx] * d_points->z[clusterIdx],
                                           d_points->r_over_absz[otherClusterIdx] * d_points->z[clusterIdx],
                                           d_points->phi[clusterIdx],
