@@ -15,14 +15,14 @@ using alpakaVect = cms::alpakatools::VecArray<int, LayerTilesConstants::maxTileD
 #if !defined(ALPAKA_ACC_GPU_CUDA_ENABLED) && !defined(ALPAKA_ACC_GPU_HIP_ENABLED)
 struct int4 {
   int x, y, z, w;
-}; 
+};
 #endif
 
 class LayerTilesAlpaka {
 public:
 
   template <typename TAcc>
-  ALPAKA_FN_ACC inline constexpr void fill(TAcc& acc, const std::vector<float>& x, const std::vector<float>& y) {
+  inline constexpr void fill(TAcc& acc, const std::vector<float>& x, const std::vector<float>& y) {
     auto cellsSize = x.size();
     for (unsigned int i = 0; i < cellsSize; ++i) {
       layerTiles_[getGlobalBin(x[i], y[i])].push_back(acc, i);

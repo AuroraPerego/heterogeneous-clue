@@ -13,12 +13,12 @@ namespace cms::alpakatools {
   template <typename Queue>
   class StreamCache {
     using Device = alpaka::Dev<Queue>;
-    using Platform = alpaka::Pltf<Device>;
+    using Platform = alpaka::Platform<Device>;
 
   public:
     // StreamCache should be constructed by the first call to
     // getStreamCache() only if we have CUDA devices present
-    StreamCache() : cache_(alpaka::getDevCount<Platform>()) {}
+    StreamCache() : cache_(alpaka::getDevCount(*platform)) {}
 
     // Gets a (cached) CUDA stream for the current device. The stream
     // will be returned to the cache by the shared_ptr destructor.
@@ -36,7 +36,7 @@ namespace cms::alpakatools {
       // StreamCache lives through multiple tests (and go through
       // multiple shutdowns of the framework).
       cache_.clear();
-      cache_.resize(alpaka::getDevCount<Platform>());
+      cache_.resize(alpaka::getDevCount(*platform));
     }
 
     std::vector<edm::ReusableObjectHolder<Queue>> cache_;

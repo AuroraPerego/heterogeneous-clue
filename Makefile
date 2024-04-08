@@ -23,10 +23,10 @@ $(warning GCC 10.3 is known to have issues compiled CUDA code, please consider u
 endif
 
 # Build flags
-USER_CXXFLAGS := 
+USER_CXXFLAGS :=
 HOST_CXXFLAGS := -O2 -fPIC -fdiagnostics-show-option -felide-constructors -fmessage-length=0 -fno-math-errno -ftree-vectorize -fvisibility-inlines-hidden --param vect-max-version-for-alias-checks=50 -mavx -march=native -mtune=native -pipe -pthread -Werror=address -Wall -Werror=array-bounds -Wno-attributes -Werror=conversion-null -Werror=delete-non-virtual-dtor -Wno-deprecated -Werror=format-contains-nul -Werror=format -Wno-long-long -Werror=main -Werror=missing-braces -Werror=narrowing -Wno-non-template-friend -Wnon-virtual-dtor -Werror=overflow -Werror=overlength-strings -Wparentheses -Werror=pointer-arith -Wno-psabi -Werror=reorder -Werror=return-local-addr -Wreturn-type -Werror=return-type -Werror=sign-compare -Werror=strict-aliasing -Wstrict-overflow -Werror=switch -Werror=type-limits -Wunused -Werror=unused-but-set-variable -Wno-unused-local-typedefs -Werror=unused-value -Wno-error=unused-variable -Wno-vla -Werror=write-strings -Wfatal-errors
 export CXXFLAGS := -std=c++17 $(HOST_CXXFLAGS) $(USER_CXXFLAGS) -g
-export LDFLAGS := -O2 -fPIC -pthread -Wl,-E -lstdc++fs -ldl 
+export LDFLAGS := -O2 -fPIC -pthread -Wl,-E -lstdc++fs -ldl
 export LDFLAGS_NVCC := -ccbin $(CXX) --linker-options '-E' --linker-options '-lstdc++fs'
 export SO_LDFLAGS := -Wl,-z,defs
 export SO_LDFLAGS_NVCC := --linker-options '-z,defs'
@@ -77,7 +77,7 @@ export CUDA_DLINKFLAGS
 endif
 
 # ROCm
-ROCM_BASE := /opt/rocm-5.0.2
+ROCM_BASE := /opt/rocm
 ifeq ($(wildcard $(ROCM_BASE)),)
 # ROCm platform not found
 ROCM_BASE :=
@@ -86,9 +86,9 @@ else
 ROCM_LIBDIR := $(ROCM_BASE)/lib
 export ROCM_BASE
 export ROCM_DEPS := $(ROCM_LIBDIR)/libamdhip64.so
-export ROCM_HIPCC := $(ROCM_BASE)/bin/hipcc
+export ROCM_HIPCC := $(ROCM_BASE)/bin/hipcc -DALPAKA_DISABLE_VENDOR_RNG
 HIPCC_UNSUPPORTED_CXXFLAGS := --param vect-max-version-for-alias-checks=50 -Werror=format-contains-nul -Wno-non-template-friend -Werror=return-local-addr -Werror=unused-but-set-variable
-export HIPCC_CXXFLAGS := -fno-gpu-rdc --amdgpu-target=gfx900 $(filter-out $(HIPCC_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) --gcc-toolchain=$(GCC_TOOLCHAIN)
+export HIPCC_CXXFLAGS := -fno-gpu-rdc --offload-arch=gfx1102 $(filter-out $(HIPCC_UNSUPPORTED_CXXFLAGS),$(CXXFLAGS)) --gcc-toolchain=$(GCC_TOOLCHAIN)
 export HIPCC_LDFLAGS := $(LDFLAGS) --gcc-toolchain=$(GCC_TOOLCHAIN)
 # flags to be used by GCC when compiling host code that includes hip_runtime.h
 export ROCM_CXXFLAGS := -D__HIP_PLATFORM_HCC__ -D__HIP_PLATFORM_AMD__ -I$(ROCM_BASE)/include -I$(ROCM_BASE)/hiprand/include -I$(ROCM_BASE)/rocrand/include
@@ -96,7 +96,7 @@ export ROCM_LDFLAGS := -L$(ROCM_LIBDIR) -lamdhip64
 export ROCM_TEST_CXXFLAGS := -DGPU_DEBUG
 endif
 
-# SYCL 
+# SYCL
 SYCL_UNSUPPORTED_CXXFLAGS := --param vect-max-version-for-alias-checks=50 -Wno-non-template-friend -Werror=format-contains-nul -Werror=return-local-addr -Werror=unused-but-set-variable
 
 ifdef USE_SYCL_PATATRACK
@@ -108,7 +108,7 @@ export SYCL_CXXFLAGS := -fsycl $(filter-out $(SYCL_UNSUPPORTED_CXXFLAGS),$(CXXFL
 else ifdef USE_SYCL_LLVM
 SYCL_BASE := /cvmfs/patatrack.cern.ch/externals/x86_64/rhel8/intel/sycl/build-2022-09
 
-USER_SYCLFLAGS := -std=c++17 
+USER_SYCLFLAGS := -std=c++17
 # CPU + NVIDIA GPU
 SYCL_AOTFLAGS := -fsycl-targets=spir64_x86_64,nvptx64-nvidia-cuda -fno-bundle-offload-arch --cuda-path=$(CUDA_BASE) -Wno-unknown-cuda-version -Wno-linker-warnings
 
@@ -213,7 +213,7 @@ else
 NEED_BOOST := $(shell awk '/.define *BOOST_VERSION\>/ { if ($$3 < $(BOOST_MIN_VERSION)) print "true"; else print "false"; }' $(BOOST_BASE)/include/boost/version.hpp )
 endif
 ifeq ($(NEED_BOOST),true)
-BOOST_BASE := $(EXTERNAL_BASE)/boost
+BOOST_BASE := /data/user/aperego/boost
 endif
 export BOOST_DEPS := $(BOOST_BASE)
 export BOOST_CXXFLAGS := -isystem $(BOOST_BASE)/include
@@ -534,9 +534,9 @@ $(foreach target,$(TARGETS_ALL),$(eval $(call CLEAN_template,$(target))))
 $(DATA_DEPS): $(DATA_CLUE_TAR_GZ) | $(DATA_BASE)/md5.txt
 	cd $(DATA_BASE) && tar zxf $(DATA_CLUE_TAR_GZ)
 	cd $(DATA_BASE) && md5sum *csv *.bin | diff -u md5.txt -
-	cd $(DATA_BASE) && mkdir input && mkdir output && cd $(DATA_BASE)/output && mkdir reference 
-	cd $(DATA_BASE) && mv ref* $(DATA_BASE)/output/reference 
-	cd $(DATA_BASE) && mv *.bin $(DATA_BASE)/input 
+	cd $(DATA_BASE) && mkdir input && mkdir output && cd $(DATA_BASE)/output && mkdir reference
+	cd $(DATA_BASE) && mv ref* $(DATA_BASE)/output/reference
+	cd $(DATA_BASE) && mv *.bin $(DATA_BASE)/input
 	touch $(DATA_DEPS)
 
 $(DATA_CLUE_TAR_GZ): | $(DATA_BASE)/url.txt
@@ -620,7 +620,7 @@ external_alpaka: $(ALPAKA_BASE)
 
 $(ALPAKA_BASE):
 	git clone git@github.com:alpaka-group/alpaka.git -b develop $@
-	cd $@ && git checkout b518e8c943a816eba06c3e12c0a7e1b58c8faedc
+	cd $@ && git checkout 4f51560ca696b305a55fb3f8b2040094bf19728f
 
 # Kokkos
 external_kokkos: $(KOKKOS_LIB)
