@@ -92,7 +92,7 @@ namespace alpaka_rocm_async {
 namespace alpaka_cpu_sycl {
   using namespace alpaka_common;
 
-  using Platform = alpaka::PltfCpuSycl;
+  using Platform = alpaka::PlatformCpuSycl;
   using Device = alpaka::DevCpuSycl;
   using Queue = alpaka::QueueCpuSyclNonBlocking;
   using Event = alpaka::EventCpuSycl;
@@ -108,7 +108,7 @@ namespace alpaka_cpu_sycl {
 namespace alpaka_gpu_sycl {
   using namespace alpaka_common;
 
-  using Platform = alpaka::PltfGpuSyclIntel;
+  using Platform = alpaka::PlatformGpuSyclIntel;
   using Device = alpaka::DevGpuSyclIntel;
   using Queue = alpaka::QueueGpuSyclIntelNonBlocking;
   using Event = alpaka::EventGpuSyclIntel;

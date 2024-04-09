@@ -30,12 +30,12 @@ namespace cms::alpakatools {
 
   template <typename TPlatform>
   void resetDevices() {
-#ifdef ALPAKA_ACC_SYCL_ENABLED
+//#ifdef ALPAKA_ACC_SYCL_ENABLED
+//    devices<TPlatform>.clear();
+//    TPlatform::reset();
+//#else
     devices<TPlatform>.clear();
-    TPlatform::reset();
-#else
-    devices<TPlatform>.clear();
-#endif
+//#endif
   }
 
   // explicit template instantiation definition
