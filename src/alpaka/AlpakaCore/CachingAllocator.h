@@ -124,7 +124,7 @@ namespace cms::alpakatools {
           maxCachedBytes_(cacheSize(maxCachedBytes, maxCachedFraction)),
           reuseSameQueueAllocations_(reuseSameQueueAllocations),
           debug_(debug) {
-      if constexpr (false) {
+      if (debug_) {
         std::ostringstream out;
         out << "CachingAllocator settings\n"
             << "  bin growth " << binGrowth_ << "\n"
@@ -197,24 +197,32 @@ namespace cms::alpakatools {
         // TODO use std::move ?
         cachedBlocks_.insert(std::make_pair(block.bin, block));
 
-        if constexpr (false) {
+        if (debug_) {
           std::ostringstream out;
           out << "\t" << deviceType_ << " " << alpaka::getName(device_) << " returned " << block.bytes << " bytes at "
-              << ptr << " from associated queue " << block.queue->getNativeHandle() << " , event "
-              << block.event->getNativeHandle() << " .\n\t\t " << cachedBlocks_.size() << " available blocks cached ("
-              << cachedBytes_.free << " bytes), " << liveBlocks_.size() << " live blocks (" << cachedBytes_.live
-              << " bytes) outstanding." << std::endl;
+              << ptr << " from associated queue " << block.queue->m_spQueueImpl.get() << " , event "
+#if ALPAKA_ACC_SYCL_ENABLED
+              << " is not a shared pointer in SYCL"
+#else
+              << block.event->m_spEventImpl.get()
+#endif
+              << " .\n\t\t " << cachedBlocks_.size() << " available blocks cached (" << cachedBytes_.free << " bytes), "
+              << liveBlocks_.size() << " live blocks (" << cachedBytes_.live << " bytes) outstanding." << std::endl;
           std::cout << out.str() << std::endl;
         }
       } else {
         // if the buffer is not recached, it is automatically freed when block goes out of scope
-        if constexpr (false) {
+        if (debug_) {
           std::ostringstream out;
           out << "\t" << deviceType_ << " " << alpaka::getName(device_) << " freed " << block.bytes << " bytes at "
-              << ptr << " from associated queue " << block.queue->getNativeHandle() << ", event "
-              << block.event->getNativeHandle() << " .\n\t\t " << cachedBlocks_.size() << " available blocks cached ("
-              << cachedBytes_.free << " bytes), " << liveBlocks_.size() << " live blocks (" << cachedBytes_.live
-              << " bytes) outstanding." << std::endl;
+              << ptr << " from associated queue " << block.queue->m_spQueueImpl.get() << ", event "
+#if ALPAKA_ACC_SYCL_ENABLED
+              << " is not a shared pointer in SYCL"
+#else
+              << block.event->m_spEventImpl.get()
+#endif
+              << " .\n\t\t " << cachedBlocks_.size() << " available blocks cached (" << cachedBytes_.free << " bytes), "
+              << liveBlocks_.size() << " live blocks (" << cachedBytes_.live << " bytes) outstanding." << std::endl;
           std::cout << out.str() << std::endl;
         }
       }
@@ -297,13 +305,23 @@ namespace cms::alpakatools {
           cachedBytes_.live += block.bytes;
           cachedBytes_.requested += block.requested;
 
-          if constexpr (false) {
+          if (debug_) {
             std::ostringstream out;
             out << "\t" << deviceType_ << " " << alpaka::getName(device_) << " reused cached block at "
-                << block.buffer->data() << " (" << block.bytes << " bytes) for queue " << block.queue->getNativeHandle()
-                << ", event " << block.event->getNativeHandle() << " (previously associated with stream "
-                << iBlock->second.queue->getNativeHandle() << " , event " << iBlock->second.event->getNativeHandle()
-                << ")." << std::endl;
+                << block.buffer->data() << " (" << block.bytes << " bytes) for queue "
+                << block.queue->m_spQueueImpl.get() << ", event "
+                <<
+#if ALPAKA_ACC_SYCL_ENABLED
+                " is not a shared pointer in SYCL"
+#else
+                block.event->m_spEventImpl.get()
+#endif
+                << " (previously associated with stream " << iBlock->second.queue->m_spQueueImpl.get() << " , event "
+#if ALPAKA_ACC_SYCL_ENABLED
+                << " is not a shared pointer in SYCL)." << std::endl;
+#else
+                << iBlock->second.event->m_spEventImpl.get() << ")." << std::endl;
+#endif
             std::cout << out.str() << std::endl;
           }
 
@@ -322,8 +340,8 @@ namespace cms::alpakatools {
         return alpaka::allocBuf<std::byte, size_t>(device_, bytes);
       } else if constexpr (std::is_same_v<Device, alpaka::DevCpu>) {
         // allocate pinned host memory accessible by the queue's platform
-		return alpaka::allocMappedBuf<alpaka::Platform<alpaka::Dev<Queue>>, std::byte, size_t>(
-            device_, *platform, bytes);
+        return alpaka::allocMappedBuf<alpaka::Platform<alpaka::Dev<Queue>>, std::byte, size_t>(
+            device_, *platform<alpaka::Platform<alpaka::Dev<Queue>>>, bytes);
       } else {
         // unsupported combination
         static_assert(std::is_same_v<Device, alpaka::Dev<Queue>> or std::is_same_v<Device, alpaka::DevCpu>,
@@ -337,11 +355,11 @@ namespace cms::alpakatools {
         block.buffer = allocateBuffer(block.bytes, *block.queue);
       } catch (std::runtime_error const& e) {
         // the allocation attempt failed: free all cached blocks on the device and retry
-        if constexpr (false) {
+        if (debug_) {
           std::ostringstream out;
           out << "\t" << deviceType_ << " " << alpaka::getName(device_) << " failed to allocate " << block.bytes
-              << " bytes for queue " << block.queue->getNativeHandle() << ", retrying after freeing cached allocations"
-              << std::endl;
+              << " bytes for queue " << block.queue->m_spQueueImpl.get()
+              << ", retrying after freeing cached allocations" << std::endl;
           std::cout << out.str() << std::endl;
         }
         // TODO implement a method that frees only up to block.bytes bytes
@@ -362,11 +380,18 @@ namespace cms::alpakatools {
         liveBlocks_[block.buffer->data()] = block;
       }
 
-      if constexpr (false) {
+      if (debug_) {
         std::ostringstream out;
         out << "\t" << deviceType_ << " " << alpaka::getName(device_) << " allocated new block at "
             << block.buffer->data() << " (" << block.bytes << " bytes associated with queue "
-            << block.queue->getNativeHandle() << ", event " << block.event->getNativeHandle() << "." << std::endl;
+            << block.queue->m_spQueueImpl.get() << ", event "
+            <<
+#if ALPAKA_ACC_SYCL_ENABLED
+            " is not a shared pointer in SYCL"
+#else
+            block.event->m_spEventImpl.get()
+#endif
+            << "." << std::endl;
         std::cout << out.str() << std::endl;
       }
     }
@@ -378,7 +403,7 @@ namespace cms::alpakatools {
         auto iBlock = cachedBlocks_.begin();
         cachedBytes_.free -= iBlock->second.bytes;
 
-        if constexpr (false) {
+        if (debug_) {
           std::ostringstream out;
           out << "\t" << deviceType_ << " " << alpaka::getName(device_) << " freed " << iBlock->second.bytes
               << " bytes.\n\t\t  " << (cachedBlocks_.size() - 1) << " available blocks cached (" << cachedBytes_.free

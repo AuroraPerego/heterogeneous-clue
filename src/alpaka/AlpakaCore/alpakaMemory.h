@@ -104,7 +104,8 @@ namespace cms::alpakatools {
     if constexpr (allocator_policy<alpaka::Dev<TQueue>> == AllocatorPolicy::Caching) {
       return allocCachedBuf<T, Idx>(host, queue, Scalar{});
     } else {
-      return alpaka::allocMappedBuf<T, Idx>(host, *platform, Scalar{});
+      using Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
+      return alpaka::allocMappedBuf<Platform, T, Idx>(host, *platform<Platform>, Scalar{});
     }
   }
 
@@ -114,7 +115,8 @@ namespace cms::alpakatools {
     if constexpr (allocator_policy<alpaka::Dev<TQueue>> == AllocatorPolicy::Caching) {
       return allocCachedBuf<std::remove_extent_t<T>, Idx>(host, queue, Vec1D{extent});
     } else {
-      return alpaka::allocMappedBuf<std::remove_extent_t<T>, Idx>(host, *platform, Vec1D{extent});
+      using Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
+      return alpaka::allocMappedBuf<Platform, std::remove_extent_t<T>, Idx>(host, *platform<Platform>, Vec1D{extent});
     }
   }
 
@@ -124,7 +126,9 @@ namespace cms::alpakatools {
     if constexpr (allocator_policy<alpaka::Dev<TQueue>> == AllocatorPolicy::Caching) {
       return allocCachedBuf<std::remove_extent_t<T>, Idx>(host, queue, Vec1D{std::extent_v<T>});
     } else {
-      return alpaka::allocMappedBuf<std::remove_extent_t<T>, Idx>(host, *platform, Vec1D{std::extent_v<T>});
+      using Platform = alpaka::Platform<alpaka::Dev<TQueue>>;
+      return alpaka::allocMappedBuf<Platform, std::remove_extent_t<T>, Idx>(
+          host, *platform<Platform>, Vec1D{std::extent_v<T>});
     }
   }
 

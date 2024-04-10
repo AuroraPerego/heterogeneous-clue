@@ -8,7 +8,6 @@
 #include <alpaka/alpaka.hpp>
 
 #include "AlpakaCore/alpakaDevices.h"
-
 #include "Framework/ReusableObjectHolder.h"
 
 namespace cms::alpakatools {
@@ -21,7 +20,7 @@ namespace cms::alpakatools {
 
     // EventCache should be constructed by the first call to
     // getEventCache() only if we have CUDA devices present
-    EventCache() : cache_(alpaka::getDevCount(*platform)) {}
+    EventCache() : cache_(alpaka::getDevCount(*platform<Platform>)) {}
 
     // Gets a (cached) CUDA event for the current device. The event
     // will be returned to the cache by the shared_ptr destructor. The
@@ -66,7 +65,7 @@ namespace cms::alpakatools {
       // EventCache lives through multiple tests (and go through
       // multiple shutdowns of the framework).
       cache_.clear();
-      cache_.resize(alpaka::getDevCount(*platform));
+      cache_.resize(alpaka::getDevCount(*platform<Platform>));
     }
 
     std::vector<edm::ReusableObjectHolder<Event>> cache_;
